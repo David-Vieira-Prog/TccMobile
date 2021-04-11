@@ -2,6 +2,7 @@ import 'package:confpatapp/LoginUser.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mask_shifter/mask_shifter.dart';
 
 class CreateUser extends StatefulWidget {
   @override
@@ -28,7 +29,6 @@ class _CreateUserState extends State<CreateUser> {
       return false;
   }
 
-  final _formKey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final matriculacontroller = TextEditingController();
   final nomecontroller = TextEditingController();
@@ -110,19 +110,115 @@ class _CreateUserState extends State<CreateUser> {
               child: Padding(
                 padding: EdgeInsets.all(10),
                 child: Form(
-                  key: _formKey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      input('Matrícula', TextInputType.number, false,
-                          matriculacontroller),
-                      input('Nome Completo', TextInputType.name, false,
-                          nomecontroller),
-                      input('Telefone', TextInputType.number, false,
-                          telefonecontroller),
-                      input('CPF', TextInputType.number, false, cpfcontroller),
-                      input('Senha', TextInputType.text, true, senhacontroller),
+                      input(
+                        'Matrícula',
+                        TextInputType.number,
+                        false,
+                        matriculacontroller,
+                      ),
+                      input(
+                        'Nome Completo',
+                        TextInputType.name,
+                        false,
+                        nomecontroller,
+                      ),
+                      Container(
+                        height: 40,
+                        width: 280,
+                        child: TextField(
+                          textAlignVertical: TextAlignVertical.bottom,
+                          inputFormatters: [
+                            MaskedTextInputFormatterShifter(
+                                maskONE: "X XXXX-XXXX", maskTWO: "X XXXX-XXXX"),
+                          ],
+                          controller: telefonecontroller,
+                          obscureText: false,
+                          decoration: InputDecoration(
+                            hintText: 'Telefone(9 9999-9999)',
+                            hintStyle: GoogleFonts.kanit(
+                              textBaseline: TextBaseline.alphabetic,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w300,
+                              color: Colors.black54,
+                            ),
+                            //  labelText: "Telefone",
+                            labelStyle: GoogleFonts.kanit(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                                color: Colors.black54),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(7),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(7.0),
+                              borderSide: BorderSide(
+                                color: Color.fromRGBO(84, 204, 11, 1),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(7.0),
+                              borderSide: BorderSide(
+                                color: Colors.black12,
+                              ),
+                            ),
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      Container(
+                        height: 40,
+                        width: 280,
+                        child: TextField(
+                          textAlignVertical: TextAlignVertical.bottom,
+                          inputFormatters: [
+                            MaskedTextInputFormatterShifter(
+                                maskONE: "XXX.XXX.XXX-XX",
+                                maskTWO: "XXX.XXX.XXX-XX"),
+                          ],
+                          controller: cpfcontroller,
+                          obscureText: false,
+                          decoration: InputDecoration(
+                            hintText: 'CPF',
+                            hintStyle: GoogleFonts.kanit(
+                              textBaseline: TextBaseline.alphabetic,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w300,
+                              color: Colors.black54,
+                            ),
+                            //  labelText: "Telefone",
+                            labelStyle: GoogleFonts.kanit(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                                color: Colors.black54),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(7),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(7.0),
+                              borderSide: BorderSide(
+                                color: Color.fromRGBO(84, 204, 11, 1),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(7.0),
+                              borderSide: BorderSide(
+                                color: Colors.black12,
+                              ),
+                            ),
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      input(
+                        'Senha',
+                        TextInputType.text,
+                        true,
+                        senhacontroller,
+                      ),
                       SizedBox(
                         height: 40,
                         width: 320,
@@ -133,7 +229,17 @@ class _CreateUserState extends State<CreateUser> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: new BorderRadius.circular(7.0)),
                             onPressed: () async {
-                              if (_formKey.currentState.validate()) {
+                              if (matriculacontroller.value.text.isEmpty ||
+                                  nomecontroller.value.text.isEmpty ||
+                                  telefonecontroller.value.text.isEmpty ||
+                                  cpfcontroller.value.text.isEmpty ||
+                                  senhacontroller.value.text.isEmpty) {
+                                _scaffoldKey.currentState.showSnackBar(
+                                    new SnackBar(
+                                        duration: Duration(seconds: 1),
+                                        backgroundColor: Colors.red,
+                                        content: new Text('Há campos vazios')));
+                              } else {
                                 bool created = await createUser(
                                     matriculacontroller.value.text,
                                     nomecontroller.value.text,
@@ -152,13 +258,6 @@ class _CreateUserState extends State<CreateUser> {
                                       MaterialPageRoute(
                                           builder: (context) => LoginUser()));
                                 }
-                              } else {
-                                _scaffoldKey.currentState.showSnackBar(
-                                    new SnackBar(
-                                        duration: Duration(seconds: 1),
-                                        backgroundColor: Colors.red,
-                                        content:
-                                            new Text('Há campos vazios!')));
                               }
                             },
                             child: Text(
@@ -171,9 +270,10 @@ class _CreateUserState extends State<CreateUser> {
                             )),
                       ),
                       Divider(color: Colors.black38, height: 2),
-                      Container(
-                        height: 16,
+                      SizedBox(
+                        height: 20,
                         child: FlatButton(
+                            splashColor: Color.fromRGBO(84, 204, 11, 1),
                             color: Colors.transparent,
                             onPressed: () {
                               Navigator.pushReplacement(
@@ -184,7 +284,7 @@ class _CreateUserState extends State<CreateUser> {
                             child: Text(
                               'Já possui conta? Entre aqui',
                               style: GoogleFonts.kanit(
-                                fontSize: 13.5,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w300,
                                 color: Color.fromRGBO(84, 204, 11, 1),
                               ),
@@ -218,12 +318,16 @@ class _CreateUserState extends State<CreateUser> {
   }
 }
 
-Widget input(label, TextInputType keyboardType, value,
-    TextEditingController controller) {
+Widget input(
+  label,
+  TextInputType keyboardType,
+  value,
+  TextEditingController controller,
+) {
   return Container(
     height: 40,
     width: 280,
-    child: TextFormField(
+    child: TextField(
       controller: controller,
       obscureText: value,
       decoration: InputDecoration(
@@ -247,12 +351,6 @@ Widget input(label, TextInputType keyboardType, value,
         ),
       ),
       keyboardType: keyboardType,
-      validator: (value) {
-        if (value.isEmpty) {
-          return '';
-        }
-        return null;
-      },
     ),
   );
 }

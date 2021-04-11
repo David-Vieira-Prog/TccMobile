@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:intl/date_symbol_data_file.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 // ignore: must_be_immutable
 class Conferences extends StatefulWidget {
@@ -25,6 +28,28 @@ class _ConferencesState extends State<Conferences> {
     response = await http.get(
         "https://apiconfpat.herokuapp.com/api/getConferences/${widget.codSetor}");
     return json.decode(response.body);
+  }
+
+  Future addRegisterConference(int idconferencia) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    int matricula = pref.getInt('matricula');
+    var url = 'apiconfpat.herokuapp.com/api/registerconference';
+    // var response = await http.post(url, body: {
+
+    //         'Idconferencia' : '$idconferencia',
+    //             'Matricula' : '$matricula',
+    //             'DataInit' :  $request->DataInit,
+    //             'DataClose' :'',
+    //             'Estado' : 'Em andamento',
+    // });
+    //
+    final f = new DateFormat('yyyy-MM-dd HH:mm:ss', 'pt');
+
+    print(idconferencia);
+    print(matricula);
+    print(f.format(DateTime.now()));
+    print('');
+    print('Em andamento');
   }
 
   @override
@@ -120,7 +145,9 @@ class _ConferencesState extends State<Conferences> {
                         Padding(
                             padding: EdgeInsets.only(right: 5, top: 5),
                             child: Text(
-                                'Data: ' + snapshot.data["data"][index]['Data'],
+                                'Data: ' +
+                                    formatDate(
+                                        snapshot.data["data"][index]['Data']),
                                 style: GoogleFonts.kanit(
                                     fontSize: 20,
                                     color: (index % 2 == 0)
@@ -149,16 +176,17 @@ class _ConferencesState extends State<Conferences> {
                             color: (index % 2 == 0)
                                 ? Color.fromRGBO(84, 204, 11, 1)
                                 : Colors.white,
-                            onPressed: () {
-                              {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => UniqueConference(
-                                              snapshot.data["data"][index]
-                                                  ['Idconferencia'],
-                                            )));
-                              }
+                            onPressed: () async {
+                              await addRegisterConference(snapshot.data["data"]
+                                  [index]['Idconferencia']);
+
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => UniqueConference(
+                                            snapshot.data["data"][index]
+                                                ['Idconferencia'],
+                                          )));
                             },
                             shape: RoundedRectangleBorder(
                                 borderRadius: new BorderRadius.circular(7.0)),
@@ -175,5 +203,10 @@ class _ConferencesState extends State<Conferences> {
                 )),
           );
         });
+  }
+
+  String formatDate(String date) {
+    List<String> dates = date.split('-');
+    return dates[2] + '/' + dates[1] + '/' + dates[0];
   }
 }

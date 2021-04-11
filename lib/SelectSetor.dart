@@ -22,7 +22,6 @@ class _SelectSetorState extends State<SelectSetor> {
     response =
         await http.get("https://apiconfpat.herokuapp.com/api/allsetores");
     var data = json.decode(response.body);
-    print(data['data'][0]['nome']);
     return json.decode(response.body);
   }
 

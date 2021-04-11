@@ -1,11 +1,14 @@
 import 'dart:convert';
-
 import 'package:confpatapp/CreateUser.dart';
 import 'package:confpatapp/HomeScreen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:switcher/core/switcher_size.dart';
+import 'package:switcher/switcher.dart';
 
 class LoginUser extends StatefulWidget {
   @override
@@ -22,7 +25,6 @@ class _LoginUserState extends State<LoginUser> {
     );
 
     var data = json.decode(response.body);
-
     if (data["authenticated"] == true) {
       SharedPreferences pref = await SharedPreferences.getInstance();
       pref.setInt('matricula', data['data'][0]['Matricula']);
@@ -30,15 +32,15 @@ class _LoginUserState extends State<LoginUser> {
       pref.setString('telefone', data['data'][0]['Telefone']);
       pref.setString('cpf', data['data'][0]['Cpf']);
       return true;
-    } else
+    } else if (data["message"] == "Login Failed") {
       return false;
+    }
   }
 
-  final _formKey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final matriculacontroller = TextEditingController();
   final senhacontroller = TextEditingController();
-
+  bool showPassword = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,81 +113,119 @@ class _LoginUserState extends State<LoginUser> {
               ),
               child: Padding(
                 padding: EdgeInsets.all(10),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      input('Matrícula', TextInputType.number, false,
-                          matriculacontroller),
-                      input('Senha', TextInputType.text, true, senhacontroller),
-                      SizedBox(
-                        height: 40,
-                        width: 320,
-                        child: RaisedButton(
-                            elevation: 4.0,
-                            splashColor: Colors.green,
-                            color: Color.fromRGBO(84, 204, 11, 1),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: new BorderRadius.circular(7.0)),
-                            onPressed: () async {
-                              if (_formKey.currentState.validate()) {
-                                bool auth = await authUser(
-                                    matriculacontroller.value.text,
-                                    senhacontroller.value.text);
-                                if (auth == true) {
-                                  _scaffoldKey.currentState.showSnackBar(
-                                      new SnackBar(
-                                          duration: Duration(seconds: 1),
-                                          backgroundColor: Colors.green,
-                                          content: new Text(
-                                              'Login Realizado com sucesso')));
-                                  Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => HomeScreen()));
-                                }
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    input('Matrícula', TextInputType.number, false,
+                        matriculacontroller),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 225,
+                          child: input('Senha', TextInputType.text,
+                              showPassword, senhacontroller),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(left: 5),
+                          child: Switcher(
+                            animationDuration: Duration(milliseconds: 500),
+                            value: false,
+                            size: SwitcherSize.small,
+                            switcherButtonRadius: 40,
+                            switcherRadius: 10,
+                            enabledSwitcherButtonRotate: true,
+                            iconOff: Icons.lock,
+                            iconOn: Icons.lock_open,
+                            colorOff: Colors.redAccent.withOpacity(0.8),
+                            colorOn: Color.fromRGBO(84, 204, 11, 1),
+                            onChanged: (bool state) {
+                              SchedulerBinding.instance
+                                  .addPostFrameCallback((_) {
+                                setState(() {
+                                  showPassword = !state;
+                                });
+                              });
+                            },
+                          ),
+                        )
+                      ],
+                    ),
+                    SizedBox(
+                      height: 40,
+                      width: 320,
+                      // ignore: deprecated_member_use
+                      child: RaisedButton(
+                          elevation: 4.0,
+                          splashColor: Colors.green,
+                          color: Color.fromRGBO(84, 204, 11, 1),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: new BorderRadius.circular(7.0)),
+                          onPressed: () async {
+                            if (matriculacontroller.value.text.isEmpty ||
+                                senhacontroller.value.text.isEmpty) {
+                              _scaffoldKey.currentState.showSnackBar(
+                                  new SnackBar(
+                                      duration: Duration(seconds: 1),
+                                      backgroundColor: Colors.red,
+                                      content: new Text('Há campos vazios')));
+                            } else {
+                              bool auth = await authUser(
+                                  matriculacontroller.value.text,
+                                  senhacontroller.value.text);
+                              if (auth == true) {
+                                _scaffoldKey.currentState.showSnackBar(
+                                    new SnackBar(
+                                        duration: Duration(seconds: 1),
+                                        backgroundColor: Colors.green,
+                                        content: new Text(
+                                            'Login Realizado com sucesso')));
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => HomeScreen()));
                               } else {
                                 _scaffoldKey.currentState.showSnackBar(
                                     new SnackBar(
                                         duration: Duration(seconds: 1),
                                         backgroundColor: Colors.red,
-                                        content:
-                                            new Text('Há campos vazios!')));
+                                        content: new Text(
+                                            'Matrícula e/ou Senha inválidas')));
                               }
-                            },
-                            child: Text(
-                              'Entrar',
-                              style: GoogleFonts.kanit(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w300,
-                                color: Colors.white,
-                              ),
-                            )),
-                      ),
-                      Divider(color: Colors.black38, height: 2),
-                      SizedBox(
-                        height: 16,
-                        child: FlatButton(
-                            color: Colors.transparent,
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => CreateUser()));
-                            },
-                            child: Text(
-                              'Não tem conta? Cadastre-se aqui',
-                              style: GoogleFonts.kanit(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w300,
-                                color: Color.fromRGBO(84, 204, 11, 1),
-                              ),
-                            )),
-                      )
-                    ],
-                  ),
+                            }
+                          },
+                          child: Text(
+                            'Entrar',
+                            style: GoogleFonts.kanit(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w300,
+                              color: Colors.white,
+                            ),
+                          )),
+                    ),
+                    Divider(color: Colors.black38, height: 2),
+                    SizedBox(
+                      height: 20,
+                      child: FlatButton(
+                          splashColor: Color.fromRGBO(84, 204, 11, 1),
+                          color: Colors.transparent,
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => CreateUser()));
+                          },
+                          child: Text(
+                            'Não tem conta? Cadastre-se aqui',
+                            style: GoogleFonts.kanit(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w300,
+                              color: Color.fromRGBO(84, 204, 11, 1),
+                            ),
+                          )),
+                    )
+                  ],
                 ),
               ),
             ),
@@ -217,7 +257,7 @@ Widget input(label, TextInputType keyboardType, value,
   return Container(
     height: 40,
     width: 280,
-    child: TextFormField(
+    child: TextField(
       controller: controller,
       obscureText: value,
       decoration: InputDecoration(
@@ -241,12 +281,6 @@ Widget input(label, TextInputType keyboardType, value,
         ),
       ),
       keyboardType: keyboardType,
-      validator: (value) {
-        if (value.isEmpty) {
-          return '';
-        }
-        return null;
-      },
     ),
   );
 }

@@ -21,6 +21,7 @@ class _UniqueConferenceState extends State<UniqueConference> {
 
   Future myfunction;
   String currentSala = '';
+  int quantidade;
   final tombamentocontroller = TextEditingController();
   @override
   void initState() {
@@ -59,13 +60,16 @@ class _UniqueConferenceState extends State<UniqueConference> {
                     switch (snapshot.connectionState) {
                       case ConnectionState.waiting:
                       case ConnectionState.none:
-                        return Center(
-                            child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                              Color.fromRGBO(84, 204, 11, 1)),
-                        ));
+                        return Padding(
+                            padding: EdgeInsets.only(top: 20),
+                            child: Center(
+                                child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color.fromRGBO(84, 204, 11, 1)),
+                            )));
                       default:
                         currentSala = snapshot.data["data"][0]['Sala'];
+                        quantidade = snapshot.data["Quantidade"];
                         return Container(
                           width: MediaQuery.of(context).size.width,
                           height: MediaQuery.of(context).size.width * 0.25,
@@ -143,6 +147,7 @@ class _UniqueConferenceState extends State<UniqueConference> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       FlatButton(
+                        splashColor: Color.fromRGBO(84, 204, 11, 1),
                         onPressed: () async {
                           scan(currentSala, _scaffoldKey);
                         },
@@ -195,12 +200,23 @@ class _UniqueConferenceState extends State<UniqueConference> {
                               )),
                           RaisedButton(
                               onPressed: () async {
-                                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          PatrimonioConferencia(tombamentocontroller.value.text, currentSala, widget.idConferencia)));
-
+                                if (tombamentocontroller.text.isNotEmpty) {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              PatrimonioConferencia(
+                                                  tombamentocontroller
+                                                      .value.text,
+                                                  currentSala,
+                                                  widget.idConferencia)));
+                                } else {
+                                  _scaffoldKey.currentState.showSnackBar(
+                                      new SnackBar(
+                                          duration: Duration(seconds: 1),
+                                          backgroundColor: Colors.red,
+                                          content: new Text('Campo vazio!')));
+                                }
                               },
                               elevation: 4,
                               color: Color.fromRGBO(84, 204, 11, 1),
@@ -210,6 +226,18 @@ class _UniqueConferenceState extends State<UniqueConference> {
                                       color: Colors.white,
                                       fontWeight: FontWeight.w300)))
                         ],
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(top: 40),
+                        child: RaisedButton(
+                            onPressed: () {},
+                            elevation: 4,
+                            color: Colors.redAccent,
+                            child: Text('Finalizar',
+                                style: GoogleFonts.kanit(
+                                    fontSize: 20,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w300))),
                       )
                     ],
                   ),
@@ -233,8 +261,8 @@ class _UniqueConferenceState extends State<UniqueConference> {
               : Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          PatrimonioConferencia(value, sala, widget.idConferencia))));
+                      builder: (context) => PatrimonioConferencia(
+                          value, sala, widget.idConferencia))));
     } on PlatformException {
       SnackBar(
           content: Text('Erro ao escanear patrimônio',
@@ -284,22 +312,6 @@ void mymodal(context, AsyncSnapshot snapshot) {
                         ),
                       ),
                       Text(
-                        'Data de tombamento: ${snapshot.data["Patrimonios"][index]["DataTombamento"]}',
-                        style: GoogleFonts.kanit(
-                          fontSize: 15,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                      Text(
-                        'Data de tombamento: ${snapshot.data["Patrimonios"][index]["DataTombamento"]}',
-                        style: GoogleFonts.kanit(
-                          fontSize: 15,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                      Text(
                         'Data de garantia: ${snapshot.data["Patrimonios"][index]["DataGarantia"]}',
                         style: GoogleFonts.kanit(
                           fontSize: 15,
@@ -317,30 +329,6 @@ void mymodal(context, AsyncSnapshot snapshot) {
                       ),
                       Text(
                         'Estado: ${snapshot.data["Patrimonios"][index]["Estado"]}',
-                        style: GoogleFonts.kanit(
-                          fontSize: 15,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                      Text(
-                        'Finalidade: ${snapshot.data["Patrimonios"][index]["Finalidade"]}',
-                        style: GoogleFonts.kanit(
-                          fontSize: 15,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                      Text(
-                        'Depreciável: ${snapshot.data["Patrimonios"][index]["Depreciavel"]}',
-                        style: GoogleFonts.kanit(
-                          fontSize: 15,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                      Text(
-                        'Valor: ${snapshot.data["Patrimonios"][index]["Valor"]}',
                         style: GoogleFonts.kanit(
                           fontSize: 15,
                           color: Colors.black,
