@@ -90,12 +90,25 @@ Widget cardSetores(context, snapshot) {
                 ),
                 FlatButton(
                   onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => Conferences(
-                                  snapshot.data["data"][index]["CodSetor"],
-                                )));
+                    Navigator.of(context).pushReplacement(PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          Conferences(
+                        snapshot.data["data"][index]["CodSetor"],
+                      ),
+                      transitionDuration: Duration(milliseconds: 750),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                        animation = CurvedAnimation(
+                            curve: Curves.ease, parent: animation);
+                        return Align(
+                          child: SizeTransition(
+                            sizeFactor: animation,
+                            child: child,
+                            axisAlignment: 1.5,
+                          ),
+                        );
+                      },
+                    ));
                   },
                   child: Icon(
                     Icons.arrow_right,

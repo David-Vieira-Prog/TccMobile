@@ -22,10 +22,20 @@ class _CustomDrawerState extends State<CustomDrawer> {
     pref.remove('nome');
     pref.remove('telefone');
     pref.remove('cpf');
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => LoginUser()),
-    );
+    Navigator.of(context).pushReplacement(PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => LoginUser(),
+      transitionDuration: Duration(milliseconds: 750),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        animation = CurvedAnimation(curve: Curves.ease, parent: animation);
+        return Align(
+          child: SizeTransition(
+            sizeFactor: animation,
+            child: child,
+            axisAlignment: 1.5,
+          ),
+        );
+      },
+    ));
   }
 
   int matricula;

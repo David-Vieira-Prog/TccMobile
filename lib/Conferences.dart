@@ -1,3 +1,4 @@
+import 'package:confpatapp/HomeScreen.dart';
 import 'package:confpatapp/UniqueConference.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -33,29 +34,27 @@ class _ConferencesState extends State<Conferences> {
   Future addRegisterConference(int idconferencia) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     int matricula = pref.getInt('matricula');
-    var url = 'apiconfpat.herokuapp.com/api/registerconference';
-    // var response = await http.post(url, body: {
-
-    //         'Idconferencia' : '$idconferencia',
-    //             'Matricula' : '$matricula',
-    //             'DataInit' :  $request->DataInit,
-    //             'DataClose' :'',
-    //             'Estado' : 'Em andamento',
-    // });
-    //
     final f = new DateFormat('yyyy-MM-dd HH:mm:ss', 'pt');
-
-    print(idconferencia);
-    print(matricula);
-    print(f.format(DateTime.now()));
-    print('');
-    print('Em andamento');
+    var url = "https://apiconfpat.herokuapp.com/api/registerconference";
+    var response = await http.post(url, body: {
+      'Idconferencia': '$idconferencia',
+      'Matricula': '$matricula',
+      'DataInit': f.format(DateTime.now()),
+      'DataClose': '',
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacement(
+                context, MaterialPageRoute(builder: (context) => HomeScreen()));
+          },
+        ),
         backgroundColor: Color.fromRGBO(84, 204, 11, 1),
         title: Text(
           'Conferências',
@@ -172,31 +171,98 @@ class _ConferencesState extends State<Conferences> {
                                 fontWeight: FontWeight.w300),
                           ),
                         ),
-                        FlatButton(
-                            color: (index % 2 == 0)
-                                ? Color.fromRGBO(84, 204, 11, 1)
-                                : Colors.white,
-                            onPressed: () async {
-                              await addRegisterConference(snapshot.data["data"]
-                                  [index]['Idconferencia']);
-
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => UniqueConference(
-                                            snapshot.data["data"][index]
-                                                ['Idconferencia'],
-                                          )));
-                            },
-                            shape: RoundedRectangleBorder(
-                                borderRadius: new BorderRadius.circular(7.0)),
-                            child: Text('Iniciar',
-                                style: GoogleFonts.kanit(
-                                    fontSize: 20,
+                        snapshot.data["data"][index]["Estado"] == "Pronta"
+                            ? Padding(
+                                padding: EdgeInsets.only(right: 10),
+                                child: RaisedButton(
+                                    elevation: 4,
                                     color: (index % 2 == 0)
-                                        ? Colors.white
-                                        : Color.fromRGBO(84, 204, 11, 1),
-                                    fontWeight: FontWeight.w300)))
+                                        ? Color.fromRGBO(84, 204, 11, 1)
+                                        : Colors.white,
+                                    onPressed: () async {
+                                      await addRegisterConference(
+                                          snapshot.data["data"][index]
+                                              ['Idconferencia']);
+                                      Navigator.of(context)
+                                          .pushReplacement(PageRouteBuilder(
+                                        pageBuilder: (context, animation,
+                                                secondaryAnimation) =>
+                                            UniqueConference(
+                                                snapshot.data["data"][index]
+                                                    ['Idconferencia'],
+                                                widget.codSetor),
+                                        transitionDuration:
+                                            Duration(milliseconds: 750),
+                                        transitionsBuilder: (context, animation,
+                                            secondaryAnimation, child) {
+                                          animation = CurvedAnimation(
+                                              curve: Curves.ease,
+                                              parent: animation);
+                                          return Align(
+                                            child: SizeTransition(
+                                              sizeFactor: animation,
+                                              child: child,
+                                              axisAlignment: 1.5,
+                                            ),
+                                          );
+                                        },
+                                      ));
+                                    },
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            new BorderRadius.circular(7.0)),
+                                    child: Text('Iniciar',
+                                        style: GoogleFonts.kanit(
+                                            fontSize: 20,
+                                            color: (index % 2 == 0)
+                                                ? Colors.white
+                                                : Color.fromRGBO(
+                                                    84, 204, 11, 1),
+                                            fontWeight: FontWeight.w300))))
+                            : Padding(
+                                padding: EdgeInsets.only(right: 10),
+                                child: RaisedButton(
+                                    elevation: 4,
+                                    color: (index % 2 == 0)
+                                        ? Color.fromRGBO(84, 204, 11, 1)
+                                        : Colors.white,
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .pushReplacement(PageRouteBuilder(
+                                        pageBuilder: (context, animation,
+                                                secondaryAnimation) =>
+                                            UniqueConference(
+                                                snapshot.data["data"][index]
+                                                    ['Idconferencia'],
+                                                widget.codSetor),
+                                        transitionDuration:
+                                            Duration(milliseconds: 750),
+                                        transitionsBuilder: (context, animation,
+                                            secondaryAnimation, child) {
+                                          animation = CurvedAnimation(
+                                              curve: Curves.ease,
+                                              parent: animation);
+                                          return Align(
+                                            child: SizeTransition(
+                                              sizeFactor: animation,
+                                              child: child,
+                                              axisAlignment: 1.5,
+                                            ),
+                                          );
+                                        },
+                                      ));
+                                    },
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            new BorderRadius.circular(7.0)),
+                                    child: Text('Continuar',
+                                        style: GoogleFonts.kanit(
+                                            fontSize: 20,
+                                            color: (index % 2 == 0)
+                                                ? Colors.white
+                                                : Color.fromRGBO(
+                                                    84, 204, 11, 1),
+                                            fontWeight: FontWeight.w300))))
                       ],
                     )
                   ],

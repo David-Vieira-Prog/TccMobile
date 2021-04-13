@@ -181,10 +181,26 @@ class _LoginUserState extends State<LoginUser> {
                                         backgroundColor: Colors.green,
                                         content: new Text(
                                             'Login Realizado com sucesso')));
-                                Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => HomeScreen()));
+                                Navigator.of(context)
+                                    .pushReplacement(PageRouteBuilder(
+                                  pageBuilder: (context, animation,
+                                          secondaryAnimation) =>
+                                      HomeScreen(),
+                                  transitionDuration:
+                                      Duration(milliseconds: 750),
+                                  transitionsBuilder: (context, animation,
+                                      secondaryAnimation, child) {
+                                    animation = CurvedAnimation(
+                                        curve: Curves.ease, parent: animation);
+                                    return Align(
+                                      child: SizeTransition(
+                                        sizeFactor: animation,
+                                        child: child,
+                                        axisAlignment: 1.5,
+                                      ),
+                                    );
+                                  },
+                                ));
                               } else {
                                 _scaffoldKey.currentState.showSnackBar(
                                     new SnackBar(
@@ -211,10 +227,8 @@ class _LoginUserState extends State<LoginUser> {
                           splashColor: Color.fromRGBO(84, 204, 11, 1),
                           color: Colors.transparent,
                           onPressed: () {
-                            Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => CreateUser()));
+                            Navigator.of(context)
+                                .pushReplacement(_createRoute());
                           },
                           child: Text(
                             'Não tem conta? Cadastre-se aqui',
@@ -250,6 +264,23 @@ class _LoginUserState extends State<LoginUser> {
       )),
     );
   }
+}
+
+Route _createRoute() {
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => CreateUser(),
+    transitionDuration: Duration(milliseconds: 750),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      animation = CurvedAnimation(curve: Curves.ease, parent: animation);
+      return Align(
+        child: SizeTransition(
+          sizeFactor: animation,
+          child: child,
+          axisAlignment: 1.5,
+        ),
+      );
+    },
+  );
 }
 
 Widget input(label, TextInputType keyboardType, value,

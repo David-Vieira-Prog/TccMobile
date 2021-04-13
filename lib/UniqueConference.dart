@@ -1,3 +1,4 @@
+import 'package:confpatapp/Conferences.dart';
 import 'package:confpatapp/PatrimonioConferencia.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,12 +7,15 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 
 // ignore: must_be_immutable
 class UniqueConference extends StatefulWidget {
   int idConferencia;
+  int codSetor;
   dynamic tombamento;
-  UniqueConference(this.idConferencia);
+  UniqueConference(this.idConferencia, this.codSetor);
   @override
   _UniqueConferenceState createState() => _UniqueConferenceState();
 }
@@ -36,11 +40,32 @@ class _UniqueConferenceState extends State<UniqueConference> {
     return json.decode(response.body);
   }
 
+  Future closeConference(var dataclose) async {
+    var url =
+        "https://apiconfpat.herokuapp.com/api/closeconference/${widget.idConferencia}";
+    var response = await http.post(url, body: {'DataClose': '$dataclose'});
+    if (response.statusCode == 200) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => Conferences(widget.codSetor)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => Conferences(widget.codSetor)));
+            },
+          ),
           backgroundColor: Color.fromRGBO(84, 204, 11, 1),
           title: Text(
             'Conferência',
@@ -141,7 +166,7 @@ class _UniqueConferenceState extends State<UniqueConference> {
                   }),
               Padding(
                 padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.width * 0.4),
+                    top: MediaQuery.of(context).size.width * 0.2),
                 child: Center(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -151,7 +176,12 @@ class _UniqueConferenceState extends State<UniqueConference> {
                         onPressed: () async {
                           scan(currentSala, _scaffoldKey);
                         },
-                        child: Image.asset('images/QrCode.png'),
+                        child: Lottie.network(
+                          'https://assets2.lottiefiles.com/packages/lf20_bJCmvw.json',
+                          repeat: true,
+                          width: 250,
+                          height: 250,
+                        ),
                       ),
                       Text(
                           'Ao apertar, aponte a sua câmera para o patrimônio desejado.',
@@ -201,15 +231,30 @@ class _UniqueConferenceState extends State<UniqueConference> {
                           RaisedButton(
                               onPressed: () async {
                                 if (tombamentocontroller.text.isNotEmpty) {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              PatrimonioConferencia(
-                                                  tombamentocontroller
-                                                      .value.text,
-                                                  currentSala,
-                                                  widget.idConferencia)));
+                                  Navigator.of(context).push(PageRouteBuilder(
+                                    pageBuilder: (context, animation,
+                                            secondaryAnimation) =>
+                                        PatrimonioConferencia(
+                                            tombamentocontroller.value.text,
+                                            currentSala,
+                                            widget.idConferencia,
+                                            widget.codSetor),
+                                    transitionDuration:
+                                        Duration(milliseconds: 750),
+                                    transitionsBuilder: (context, animation,
+                                        secondaryAnimation, child) {
+                                      animation = CurvedAnimation(
+                                          curve: Curves.ease,
+                                          parent: animation);
+                                      return Align(
+                                        child: SizeTransition(
+                                          sizeFactor: animation,
+                                          child: child,
+                                          axisAlignment: 1.5,
+                                        ),
+                                      );
+                                    },
+                                  ));
                                 } else {
                                   _scaffoldKey.currentState.showSnackBar(
                                       new SnackBar(
@@ -230,7 +275,9 @@ class _UniqueConferenceState extends State<UniqueConference> {
                       Padding(
                         padding: EdgeInsets.only(top: 40),
                         child: RaisedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              showAlertDialog(context);
+                            },
                             elevation: 4,
                             color: Colors.redAccent,
                             child: Text('Finalizar',
@@ -248,6 +295,78 @@ class _UniqueConferenceState extends State<UniqueConference> {
         ));
   }
 
+  showAlertDialog(BuildContext context) {
+    Widget cancelar = FlatButton(
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+      child: Text(
+        "Cancelar",
+        style: GoogleFonts.kanit(
+          color: Colors.redAccent,
+          fontSize: 17,
+          fontWeight: FontWeight.w300,
+        ),
+      ),
+    );
+    Widget ok = FlatButton(
+      onPressed: () async {
+        final f = new DateFormat('yyyy-MM-dd HH:mm:ss', 'pt');
+        await closeConference(f.format(DateTime.now()));
+      },
+      child: Text(
+        "Continuar",
+        style: GoogleFonts.kanit(
+          color: Color.fromRGBO(84, 204, 11, 1),
+          fontSize: 17,
+          fontWeight: FontWeight.w300,
+        ),
+      ),
+    );
+    AlertDialog alerta = AlertDialog(
+      title: Text(
+        'Confirmação',
+        style: GoogleFonts.kanit(
+          fontSize: 20,
+          color: Colors.black,
+          fontWeight: FontWeight.w300,
+        ),
+      ),
+      content: quantidade != 0
+          ? Text(
+              "Ainda restam $quantidade  patrimônios",
+              style: GoogleFonts.kanit(
+                fontSize: 17,
+                color: Colors.black,
+                fontWeight: FontWeight.w300,
+              ),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SafeArea(
+                  child: Text(
+                    "Todos os patrimônios\n foram conferidos",
+                    style: GoogleFonts.kanit(
+                      fontSize: 17,
+                      color: Color.fromRGBO(84, 204, 11, 1),
+                      fontWeight: FontWeight.w300,
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+                Icon(Icons.done_all, color: Colors.green),
+              ],
+            ),
+      actions: [cancelar, ok],
+    );
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return alerta;
+        });
+  }
+
   Future<void> scan(String sala, GlobalKey<ScaffoldState> _scaffoldKey) async {
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
@@ -258,11 +377,24 @@ class _UniqueConferenceState extends State<UniqueConference> {
                   duration: Duration(seconds: 1),
                   backgroundColor: Colors.red,
                   content: new Text('Nada foi escaneado')))
-              : Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => PatrimonioConferencia(
-                          value, sala, widget.idConferencia))));
+              : Navigator.of(context).push(PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      PatrimonioConferencia(
+                          value, sala, widget.idConferencia, widget.codSetor),
+                  transitionDuration: Duration(milliseconds: 750),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    animation =
+                        CurvedAnimation(curve: Curves.ease, parent: animation);
+                    return Align(
+                      child: SizeTransition(
+                        sizeFactor: animation,
+                        child: child,
+                        axisAlignment: 1.5,
+                      ),
+                    );
+                  },
+                )));
     } on PlatformException {
       SnackBar(
           content: Text('Erro ao escanear patrimônio',

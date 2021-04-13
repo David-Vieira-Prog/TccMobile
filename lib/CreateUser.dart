@@ -253,10 +253,27 @@ class _CreateUserState extends State<CreateUser> {
                                           backgroundColor: Colors.green,
                                           content: new Text(
                                               'Cadastro realiazado com sucesso!')));
-                                  Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => LoginUser()));
+                                  Navigator.of(context)
+                                      .pushReplacement(PageRouteBuilder(
+                                    pageBuilder: (context, animation,
+                                            secondaryAnimation) =>
+                                        LoginUser(),
+                                    transitionDuration:
+                                        Duration(milliseconds: 750),
+                                    transitionsBuilder: (context, animation,
+                                        secondaryAnimation, child) {
+                                      animation = CurvedAnimation(
+                                          curve: Curves.ease,
+                                          parent: animation);
+                                      return Align(
+                                        child: SizeTransition(
+                                          sizeFactor: animation,
+                                          child: child,
+                                          axisAlignment: 1.5,
+                                        ),
+                                      );
+                                    },
+                                  ));
                                 }
                               }
                             },
@@ -276,10 +293,8 @@ class _CreateUserState extends State<CreateUser> {
                             splashColor: Color.fromRGBO(84, 204, 11, 1),
                             color: Colors.transparent,
                             onPressed: () {
-                              Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => LoginUser()));
+                              Navigator.of(context)
+                                  .pushReplacement(_createRoute());
                             },
                             child: Text(
                               'Já possui conta? Entre aqui',
@@ -316,6 +331,32 @@ class _CreateUserState extends State<CreateUser> {
       ),
     );
   }
+}
+
+Route _createRoute() {
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => LoginUser(),
+    transitionDuration: Duration(milliseconds: 750),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      animation = CurvedAnimation(curve: Curves.ease, parent: animation);
+      return Align(
+        child: SizeTransition(
+          sizeFactor: animation,
+          child: child,
+          axisAlignment: 1.5,
+        ),
+      );
+      // return ScaleTransition(
+      //   scale: animation,
+      //   child: child,
+      // );
+      // return SlideTransition(
+      //   position: Tween(begin: Offset(1.0, 0.0), end: Offset(0.0, 0.0))
+      //       .animate(animation),
+      //   child: child,
+      // );
+    },
+  );
 }
 
 Widget input(

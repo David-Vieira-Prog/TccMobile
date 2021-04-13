@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
-
 import 'UniqueConference.dart';
 
 // ignore: must_be_immutable
@@ -10,8 +10,10 @@ class PatrimonioConferencia extends StatefulWidget {
   dynamic tombamento;
   String sala;
   int idConferencia;
+  int codSetor;
 
-  PatrimonioConferencia(this.tombamento, this.sala, this.idConferencia);
+  PatrimonioConferencia(
+      this.tombamento, this.sala, this.idConferencia, this.codSetor);
 
   @override
   _PatrimonioConferenciaState createState() => _PatrimonioConferenciaState();
@@ -57,13 +59,25 @@ class _PatrimonioConferenciaState extends State<PatrimonioConferencia> {
     dynamic codPatrimonio,
     BuildContext context,
   ) async {
-    var url = 'http://apiconfpat.herokuapp.com/api/alterEstado/$codPatrimonio';
+    var url2 = "apiconfpat.herokuapp.com/api/alterEstado/30146051";
+    var url = "https://apiconfpat.herokuapp.com/api/alterEstado/$codPatrimonio";
     var response = await http.put(url, body: {"Estado": "$estado"});
     if (response.statusCode == 200) {
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => UniqueConference(widget.idConferencia)));
+      Navigator.of(context).pushReplacement(PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            UniqueConference(widget.idConferencia, widget.codSetor),
+        transitionDuration: Duration(milliseconds: 750),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          animation = CurvedAnimation(curve: Curves.ease, parent: animation);
+          return Align(
+            child: SizeTransition(
+              sizeFactor: animation,
+              child: child,
+              axisAlignment: 1.5,
+            ),
+          );
+        },
+      ));
     }
   }
 
@@ -109,143 +123,138 @@ class _PatrimonioConferenciaState extends State<PatrimonioConferencia> {
                                 Color.fromRGBO(84, 204, 11, 1)),
                           ));
                         default:
-                          return snapshot.hasData
-                              ? SingleChildScrollView(
-                                  child: Column(
+                          if (snapshot.data.length != 0) {
+                            return SingleChildScrollView(
+                                child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                snapshot.data[0]["Unidade"] == widget.sala
+                                    ? Container()
+                                    : Text(
+                                        'Este patrimônio pertence ao ${snapshot.data[0]["Unidade"]} ',
+                                        style: GoogleFonts.kanit(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w300,
+                                            color: Colors.redAccent),
+                                      ),
+                                column('Número de Tombamento: ',
+                                    '${snapshot.data[0]["CodPatrimonio"]}'),
+                                column('Data de garantia: ',
+                                    '${snapshot.data[0]["DataGarantia"]}'),
+                                column('Denominação: ',
+                                    '${snapshot.data[0]["Denominacao"]}'),
+                                column(
+                                    'Marca: ', '${snapshot.data[0]["Marca"]}'),
+                                Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                      MainAxisAlignment.spaceAround,
                                   children: [
-                                    snapshot.data[0]["Unidade"] == widget.sala
-                                        ? Container()
-                                        : Text(
-                                            'Este patrimônio pertence ao ${snapshot.data[0]["Unidade"]} ',
-                                            style: GoogleFonts.kanit(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.w300,
-                                                color: Colors.redAccent),
-                                          ),
-                                    column('Número de Tombamento: ',
-                                        '${snapshot.data[0]["CodPatrimonio"]}'),
-                                    column('Data de garantia: ',
-                                        '${snapshot.data[0]["DataGarantia"]}'),
-                                    column('Denominação: ',
-                                        '${snapshot.data[0]["Denominacao"]}'),
-                                    column('Marca: ',
-                                        '${snapshot.data[0]["Marca"]}'),
                                     Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
+                                          MainAxisAlignment.start,
                                       children: [
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Estado:',
-                                              style: GoogleFonts.kanit(
-                                                fontSize: 17,
-                                                color: Color.fromRGBO(
-                                                    84, 204, 11, 1),
-                                                fontWeight: FontWeight.w300,
-                                              ),
-                                            ),
-                                            Text(
-                                              '${snapshot.data[0]["Estado"]}',
-                                              textAlign: TextAlign.start,
-                                              textDirection: TextDirection.ltr,
-                                              style: GoogleFonts.kanit(
-                                                fontSize: 17,
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.w300,
-                                              ),
-                                            ),
-                                          ],
+                                        Text(
+                                          'Estado:',
+                                          style: GoogleFonts.kanit(
+                                            fontSize: 17,
+                                            color:
+                                                Color.fromRGBO(84, 204, 11, 1),
+                                            fontWeight: FontWeight.w300,
+                                          ),
                                         ),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Alterar estado ',
-                                              style: GoogleFonts.kanit(
-                                                fontSize: 17,
-                                                color: Color.fromRGBO(
-                                                    84, 204, 11, 1),
-                                                fontWeight: FontWeight.w300,
-                                              ),
-                                            ),
-                                            DropdownButton(
-                                                value: selected,
-                                                items: _items,
-                                                hint: Text('Alterar estado'),
-                                                onChanged: (value) {
-                                                  selected = value;
-                                                  setState(() {
-                                                    selected = value;
-                                                  });
-                                                }),
-                                          ],
-                                        )
+                                        Text(
+                                          '${snapshot.data[0]["Estado"]}',
+                                          textAlign: TextAlign.start,
+                                          textDirection: TextDirection.ltr,
+                                          style: GoogleFonts.kanit(
+                                            fontSize: 17,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w300,
+                                          ),
+                                        ),
                                       ],
                                     ),
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                          left: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.2),
-                                      child: Container(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.5,
-                                        child: RaisedButton(
-                                          elevation: 4.0,
-                                          splashColor: Colors.green,
-                                          color: Color.fromRGBO(84, 204, 11, 1),
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  new BorderRadius.circular(
-                                                      7.0)),
-                                          child: Text(
-                                            'Salvar',
-                                            style: GoogleFonts.kanit(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w300,
-                                              color: Colors.white,
-                                            ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Alterar estado ',
+                                          style: GoogleFonts.kanit(
+                                            fontSize: 17,
+                                            color:
+                                                Color.fromRGBO(84, 204, 11, 1),
+                                            fontWeight: FontWeight.w300,
                                           ),
-                                          onPressed: () {
-                                            {
-                                              alterEstado(
-                                                  selected,
-                                                  snapshot.data[0]
-                                                      ["CodPatrimonio"],
-                                                  context);
-                                            }
-                                          },
+                                        ),
+                                        DropdownButton(
+                                            value: selected,
+                                            items: _items,
+                                            hint: Text('Alterar estado'),
+                                            onChanged: (value) {
+                                              selected = value;
+                                              setState(() {
+                                                selected = value;
+                                              });
+                                            }),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      left: MediaQuery.of(context).size.width *
+                                          0.2),
+                                  child: Container(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.5,
+                                    child: RaisedButton(
+                                      elevation: 4.0,
+                                      splashColor: Colors.green,
+                                      color: Color.fromRGBO(84, 204, 11, 1),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              new BorderRadius.circular(7.0)),
+                                      child: Text(
+                                        'Salvar',
+                                        style: GoogleFonts.kanit(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w300,
+                                          color: Colors.white,
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ))
-                              : Center(
-                                  child: Text(
-                                    'Nenhum patrimônio encontrado com esse número de tombamento',
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.kanit(
-                                      fontSize: 25,
-                                      color: Color.fromRGBO(84, 204, 11, 1),
-                                      fontWeight: FontWeight.w300,
+                                      onPressed: () {
+                                        {
+                                          alterEstado(
+                                              selected,
+                                              snapshot.data[0]["CodPatrimonio"],
+                                              context);
+                                        }
+                                      },
                                     ),
                                   ),
-                                );
+                                ),
+                              ],
+                            ));
+                          } else {
+                            return Center(
+                              child: Text(
+                                'Nenhum patrimônio encontrado com esse número de tombamento',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.kanit(
+                                  fontSize: 25,
+                                  color: Color.fromRGBO(84, 204, 11, 1),
+                                  fontWeight: FontWeight.w300,
+                                ),
+                              ),
+                            );
+                          }
                       }
                     },
                   )),
