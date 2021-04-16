@@ -1,8 +1,11 @@
 import 'package:confpatapp/LoginUser.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mask_shifter/mask_shifter.dart';
+import 'package:switcher/core/switcher_size.dart';
+import 'package:switcher/switcher.dart';
 
 class CreateUser extends StatefulWidget {
   @override
@@ -11,7 +14,7 @@ class CreateUser extends StatefulWidget {
 
 class _CreateUserState extends State<CreateUser> {
   Future createUser(matricula, nome, telefone, cpf, senha) async {
-    var url = 'http://apiconfpat.herokuapp.com/api/CreateUserApi';
+    var url = "https://apiconfpat.herokuapp.com/api/CreateUserApi";
 
     var response = await http.post(
       url,
@@ -29,6 +32,7 @@ class _CreateUserState extends State<CreateUser> {
       return false;
   }
 
+  bool showPassword = true;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final matriculacontroller = TextEditingController();
   final nomecontroller = TextEditingController();
@@ -213,11 +217,38 @@ class _CreateUserState extends State<CreateUser> {
                           keyboardType: TextInputType.number,
                         ),
                       ),
-                      input(
-                        'Senha',
-                        TextInputType.text,
-                        true,
-                        senhacontroller,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 225,
+                            child: input('Senha', TextInputType.text,
+                                showPassword, senhacontroller),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(left: 5),
+                            child: Switcher(
+                              animationDuration: Duration(milliseconds: 500),
+                              value: false,
+                              size: SwitcherSize.small,
+                              switcherButtonRadius: 40,
+                              switcherRadius: 10,
+                              enabledSwitcherButtonRotate: true,
+                              iconOff: Icons.lock,
+                              iconOn: Icons.lock_open,
+                              colorOff: Colors.redAccent.withOpacity(0.8),
+                              colorOn: Color.fromRGBO(84, 204, 11, 1),
+                              onChanged: (bool state) {
+                                SchedulerBinding.instance
+                                    .addPostFrameCallback((_) {
+                                  setState(() {
+                                    showPassword = !state;
+                                  });
+                                });
+                              },
+                            ),
+                          )
+                        ],
                       ),
                       SizedBox(
                         height: 40,
@@ -274,6 +305,13 @@ class _CreateUserState extends State<CreateUser> {
                                       );
                                     },
                                   ));
+                                } else {
+                                  _scaffoldKey.currentState.showSnackBar(
+                                      new SnackBar(
+                                          duration: Duration(seconds: 1),
+                                          backgroundColor: Colors.red,
+                                          content: new Text(
+                                              'Erro ao inseriri dados!')));
                                 }
                               }
                             },

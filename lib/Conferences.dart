@@ -112,7 +112,7 @@ class _ConferencesState extends State<Conferences> {
             elevation: 4,
             child: Container(
                 width: 350,
-                height: 110,
+                height: 115,
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(
                       Radius.circular(7),
@@ -142,17 +142,37 @@ class _ConferencesState extends State<Conferences> {
                           ),
                         ),
                         Padding(
-                            padding: EdgeInsets.only(right: 5, top: 5),
-                            child: Text(
-                                'Data: ' +
-                                    formatDate(
-                                        snapshot.data["data"][index]['Data']),
-                                style: GoogleFonts.kanit(
-                                    fontSize: 20,
-                                    color: (index % 2 == 0)
-                                        ? Colors.white
-                                        : Color.fromRGBO(84, 204, 11, 1),
-                                    fontWeight: FontWeight.w300)))
+                            padding: EdgeInsets.only(right: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Padding(
+                                    padding: EdgeInsets.only(right: 5, top: 5),
+                                    child: Text(
+                                        'Data: ' +
+                                            formatDate(snapshot.data["data"]
+                                                [index]['Data']),
+                                        style: GoogleFonts.kanit(
+                                            fontSize: 20,
+                                            color: (index % 2 == 0)
+                                                ? Colors.white
+                                                : Color.fromRGBO(
+                                                    84, 204, 11, 1),
+                                            fontWeight: FontWeight.w300))),
+                                Text(
+                                  formatHour(
+                                      snapshot.data["data"][index]['Data']),
+                                  style: GoogleFonts.kanit(
+                                      fontSize: 20,
+                                      color: (index % 2 == 0)
+                                          ? Colors.white
+                                          : Color.fromRGBO(84, 204, 11, 1),
+                                      fontWeight: FontWeight.w300),
+                                  textAlign: TextAlign.end,
+                                ),
+                              ],
+                            ))
                       ],
                     ),
                     Row(
@@ -272,7 +292,13 @@ class _ConferencesState extends State<Conferences> {
   }
 
   String formatDate(String date) {
-    List<String> dates = date.split('-');
-    return dates[2] + '/' + dates[1] + '/' + dates[0];
+    List<String> dates = date.split(' ');
+    List<String> date1 = dates[0].split('-');
+    return date1[2] + '/' + date1[1] + '/' + date1[0];
+  }
+
+  String formatHour(String date) {
+    List<String> dates = date.split(' ');
+    return dates[1];
   }
 }

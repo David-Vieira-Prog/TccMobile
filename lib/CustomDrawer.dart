@@ -100,7 +100,7 @@ Widget drawerHeader(int matricula, String nome) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Confpat',
+              'CONFPAT',
               textAlign: TextAlign.left,
               style: GoogleFonts.kanit(
                   fontSize: 40,
